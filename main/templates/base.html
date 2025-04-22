@@ -1,0 +1,171 @@
+<!-- base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{% block title %}Jacuzzi{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fonts + Tailwind -->
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root {
+      --primary-color: #ff3c57;
+      --bg-color: #0f0f0f;
+      --text-color: #ffffff;
+    }
+
+    body {
+      font-family: 'Instrument Serif', serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    .glass {
+      background: rgba(15, 15, 15, 0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    /* 🎵 NOW PLAYING DRAWER */
+    #nowPlayingDrawer {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      height: 100%;
+      width: 300px;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(16px);
+      box-shadow: 4px 0 20px rgba(255, 0, 128, 0.2);
+      transition: left 0.4s ease;
+      z-index: 1000;
+      padding: 1.5rem;
+    }
+
+    #nowPlayingDrawer.active {
+      left: 0;
+    }
+
+    #nowPlayingDrawer img {
+      width: 100%;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 10px rgba(255, 0, 128, 0.4);
+    }
+
+    #nowPlayingDrawer h3 {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    #nowPlayingDrawer p {
+      color: #bbb;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    #nowPlayingDrawer button {
+      background: none;
+      color: var(--primary-color);
+      border: 1px solid var(--primary-color);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #nowPlayingDrawer button:hover {
+      background-color: var(--primary-color);
+      color: white;
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-zinc-950 text-white">
+  <!-- 🔥 NAV -->
+  <nav class="glass fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center shadow-md">
+    <a href="{% url 'main:home' %}" class="text-2xl font-bold text-pink-500">JACUZZI</a>
+    {% if user.is_authenticated %}
+    <form action="{% url 'main:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="bg-pink-600 hover:bg-pink-500 px-4 py-2 rounded-full">Logout</button>
+    </form>
+    {% else %}
+    <a href="{% url 'main:login' %}" class="bg-pink-600 hover:bg-pink-500 px-4 py-2 rounded-full">Login</a>
+    {% endif %}
+  </nav>
+  <!-- Inside <body> after navbar -->
+<nav class="glass fixed top-0 left-0 w-full z-50 px-6 py-4 flex justify-between items-center shadow-md">
+    <div class="flex items-center gap-4">
+      <button class="menu-toggle lg:hidden" aria-label="Open menu">
+        <span></span><span></span><span></span>
+      </button>
+      <a href="{% url 'main:home' %}" class="text-2xl font-bold text-pink-500">JACUZZI</a>
+    </div>
+  
+    {% if user.is_authenticated %}
+    <!-- ✅ SEARCH BAR FIXED -->
+    <div class="hidden md:flex flex-grow justify-center mx-4">
+      <form action="{% url 'side:search' %}" method="get" class="w-full max-w-lg">
+        <input type="search" name="q" placeholder="Search for songs..."
+          class="w-full px-4 py-2 rounded-full bg-zinc-800 text-white focus:outline-none focus:ring-2 focus:ring-pink-500" />
+      </form>
+    </div>
+    {% endif %}
+  
+    <div class="flex items-center space-x-4">
+      {% if user.is_authenticated %}
+      <form action="{% url 'main:logout' %}" method="post">
+        {% csrf_token %}
+        <button type="submit"
+          class="text-sm bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-full">Logout</button>
+      </form>
+      {% else %}
+      {% if request.resolver_match.url_name not in 'login,register' %}
+      <a href="{% url 'main:login' %}"
+        class="text-sm bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-full">Login</a>
+      {% endif %}
+      {% endif %}
+    </div>
+  </nav>
+  
+  <!-- ✨ NOW PLAYING DRAWER -->
+  <div id="nowPlayingDrawer">
+    <img id="npCover" src="" alt="Cover Art" />
+    <h3 id="npTitle">Song Title</h3>
+    <p id="npArtist">Artist Name</p>
+    <audio id="npAudio" controls class="w-full"></audio>
+    <button onclick="closeNowPlaying()">Close</button>
+  </div>
+
+  <!-- 🔗 PAGE CONTENT -->
+  <main class="pt-24 px-6 min-h-screen">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block extra_js %}{% endblock %}
+
+  <!-- 🎯 JS Logic -->
+  <script>
+    function showNowPlaying(title, artist, coverUrl, mp3Url) {
+      document.getElementById('npTitle').innerText = title;
+      document.getElementById('npArtist').innerText = artist;
+      document.getElementById('npCover').src = coverUrl;
+      const audio = document.getElementById('npAudio');
+      audio.src = mp3Url;
+      audio.play();
+
+      document.getElementById('nowPlayingDrawer').classList.add('active');
+    }
+
+    function closeNowPlaying() {
+      document.getElementById('nowPlayingDrawer').classList.remove('active');
+      document.getElementById('npAudio').pause();
+    }
+  </script>
+</body>
+</html>

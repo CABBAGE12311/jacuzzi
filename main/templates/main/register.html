@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Jacuzzi - Register{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(to right, #1a1a1a, #111);
+        padding: 2rem;
+    }
+
+    .auth-box {
+        background: rgba(40, 40, 40, 0.8);
+        backdrop-filter: blur(15px);
+        border-radius: 12px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 420px;
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        border: 1px solid rgba(255, 0, 0, 0.2);
+    }
+
+    .auth-box h1 {
+        text-align: center;
+        margin-bottom: 1.5rem;
+        color: #ff4d4d;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    label {
+        color: #ccc;
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 14px;
+        border: none;
+        border-radius: 6px;
+        background: #222;
+        color: #fff;
+        font-size: 1rem;
+        transition: 0.2s ease-in-out;
+    }
+
+    input:focus {
+        outline: none;
+        border: 1px solid #ff4d4d;
+        background-color: #2a2a2a;
+    }
+
+    .auth-box button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background-color: #ff4d4d;
+        color: black;
+        font-weight: bold;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 10px;
+    }
+
+    .auth-box button:hover {
+        background-color: #ff1a1a;
+    }
+
+    .links {
+        margin-top: 1rem;
+        text-align: center;
+    }
+
+    .links a {
+        color: #ff4d4d;
+        text-decoration: none;
+        font-size: 0.9rem;
+    }
+
+    .error-list {
+        color: #ff4d4d;
+        margin-bottom: 1rem;
+        padding-left: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .help-text {
+        font-size: 0.8rem;
+        color: #888;
+        margin-top: 0.3rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-box">
+        <h1>Register</h1>
+        <form method="post">
+            {% csrf_token %}
+            {% if form.errors %}
+                <ul class="error-list">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+            <div class="form-group">
+                <label for="id_username">Username</label>
+                {{ form.username }}
+                <div class="help-text">{{ form.username.help_text }}</div>
+            </div>
+            <div class="form-group">
+                <label for="id_password1">Password</label>
+                {{ form.password1 }}
+                <div class="help-text">{{ form.password1.help_text }}</div>
+            </div>
+            <div class="form-group">
+                <label for="id_password2">Confirm Password</label>
+                {{ form.password2 }}
+                <div class="help-text">{{ form.password2.help_text }}</div>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div class="links">
+            <p>Already have an account? <a href="{% url 'main:login' %}">Login here</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

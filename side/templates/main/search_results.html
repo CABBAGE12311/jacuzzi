@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results - Jacuzzi{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-results {
+        padding: 3rem 1rem;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .search-header h1 {
+        color: #ff2e63;
+        font-size: 2.2rem;
+    }
+
+    .search-header p {
+        color: #aaa;
+        margin-bottom: 2rem;
+    }
+
+    .song-list {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .song-item {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        padding: 1rem;
+        border-radius: 1rem;
+        transition: background 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid rgba(255, 0, 0, 0.1);
+    }
+
+    .song-item:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .song-info {
+        max-width: 80%;
+    }
+
+    .song-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: white;
+    }
+
+    .song-artist a {
+        color: #ff2e63;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .song-album {
+        color: #888;
+        font-size: 0.85rem;
+    }
+
+    .play-button {
+        background: #ff4d4d;
+        color: black;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .play-button:hover {
+        background: #ff1a1a;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 4rem 0;
+        color: #bbb;
+    }
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="search-results">
+    <div class="search-header">
+        <h1>Search Results</h1>
+        <p>Showing results for "{{ query }}"</p>
+    </div>
+
+    {% if results %}
+        <div class="song-list">
+            {% for song in results %}
+                <div class="song-item">
+                    <div class="song-info">
+                        <div class="song-title">{{ song.title }}</div>
+                        <div class="song-artist">
+                            <a href="{% url 'side:artist_profile' song.artist %}">{{ song.artist }}</a>
+                        </div>
+                        {% if song.album %}
+                            <div class="song-album">{{ song.album }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if song.audio_url %}
+                        <audio id="audio-{{ forloop.counter }}" src="{{ song.audio_url }}"></audio>
+                        <button class="play-button" onclick="togglePlay('{{ forloop.counter }}', this)">▶️</button>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="no-results">
+            <p>No songs found matching your search.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+    let currentAudio = null;
+
+    function togglePlay(id, btn) {
+        const audio = document.getElementById('audio-' + id);
+
+        // Pause any currently playing audio
+        if (currentAudio && currentAudio !== audio) {
+            currentAudio.pause();
+            currentAudio.currentTime = 0;
+            document.querySelectorAll('.play-button').forEach(b => b.textContent = '▶️');
+        }
+
+        // Toggle this audio
+        if (audio.paused) {
+            audio.play();
+            btn.textContent = '⏸️';
+            currentAudio = audio;
+        } else {
+            audio.pause();
+            btn.textContent = '▶️';
+        }
+    }
+</script>
+{% endblock %}
